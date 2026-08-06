@@ -18,7 +18,7 @@ OBJECTIVE="dpo"
 MODEL_FAMILY="llama"
 ARCH="embeddingshift"
 
-python -m torch.distributed.run --nproc_per_node=4 --master_port=29951 "$SCRIPT_PATH" \
+python -m torch.distributed.run --nproc_per_node="${NPROC_PER_NODE:-4}" --master_port=29951 "$SCRIPT_PATH" \
   --objective "${OBJECTIVE}" \
   --model-family "${MODEL_FAMILY}" \
   --arch "${ARCH}" \

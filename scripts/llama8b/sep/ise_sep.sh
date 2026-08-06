@@ -19,7 +19,7 @@ OBJECTIVE="sft"
 MODEL_FAMILY="llama"
 ARCH="ise"
 
-python -m torch.distributed.run --nproc_per_node=8 --master_port=29951 "$SCRIPT_PATH" \
+python -m torch.distributed.run --nproc_per_node="${NPROC_PER_NODE:-8}" --master_port=29951 "$SCRIPT_PATH" \
   --objective "${OBJECTIVE}" \
   --model-family "${MODEL_FAMILY}" \
   --arch "${ARCH}" \
