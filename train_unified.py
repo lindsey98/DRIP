@@ -83,7 +83,6 @@ def pick_model(family: str, arch: str):
 # =============================================================================
 
 _FUSE_LIKE = {"fuse", "nofuse", "concatfuse", "embeddingshift"}
-_ATTN_MODULES = ["q_proj", "v_proj", "k_proj", "o_proj"]
 
 
 def build_lora_config(
@@ -122,13 +121,9 @@ def build_lora_config(
 
     # ── Fuse-like (DRIP and variants) ───────────────────────────────────
     if objective in ("dpo", "sft") and arch in _FUSE_LIKE:
-        if is_moe:
-            modules_to_save = ["deinstruction_shift"]
-            target_modules = _ATTN_MODULES
-        else:
-            # Dense: full LoRA + save embed/lm_head/deinstruction_shift
-            modules_to_save = ["embed_tokens", "lm_head", "deinstruction_shift"]
-            target_modules = "all-linear"
+        # Dense: full LoRA + save embed/lm_head/deinstruction_shift
+        modules_to_save = ["embed_tokens", "lm_head", "deinstruction_shift"]
+        target_modules = "all-linear"
 
         return LoraConfig(
             r=16,
@@ -141,8 +136,8 @@ def build_lora_config(
         )
 
     # ── Default (vanilla SFT/DPO without custom architecture) ───────────
-    modules_to_save = ["lm_head", "embed_tokens"] if not is_moe else None
-    target_modules = _ATTN_MODULES if is_moe else "all-linear"
+    modules_to_save = ["lm_head", "embed_tokens"]
+    target_modules = "all-linear"
 
     return LoraConfig(
         r=32,

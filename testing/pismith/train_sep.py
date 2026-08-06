@@ -26,7 +26,10 @@ from testing.pismith.utils import (
 class SEPTrainer(PISmithTrainer):
     """Dual-reward variant: an attack succeeds only if BOTH
     (1) the witness word appears in the response (detector bypassed), AND
-    (2) a GPT auditor confirms the injected task was actually executed.
+    (2) a GPT auditor confirms the accompanying data was actually used
+        (INCLUDED) in the response, not ignored.
+    The auditor is a data-inclusion / witness check; it does not verify that the
+    injected task was executed.
     """
 
     def __init__(self, *args, auditor_model: str = "gpt-4o-mini", **kwargs):
@@ -150,7 +153,7 @@ def main():
     parser.add_argument("--attack_model_name", type=str, default="Qwen/Qwen3-4B-Instruct-2507")
     parser.add_argument("--attack_model_path", type=str, default="Qwen/Qwen3-4B-Instruct-2507")
     parser.add_argument("--auditor_model", type=str, default="gpt-4o-mini",
-                   help="OpenAI model used as the task-execution auditor judge.")
+                   help="OpenAI model used as the data-inclusion auditor judge.")
     parser.add_argument("--output_dir",   type=str, default="./pismith_ckpt/sep")
     parser.add_argument("--group_size",   type=int,   default=2)
     parser.add_argument("--lr", type=float, default=1e-5)

@@ -31,7 +31,9 @@ flowchart LR
 ```
 
 The attacker is **trained against a specific target** (the reward is whether the
-target executed the injection), then the trained adapter is loaded to attack it.
+injection's **witness** appears in the target's response and the injected data was
+used — a data-inclusion/witness signal, not a check that the injected task was
+executed), then the trained adapter is loaded to attack it.
 
 ## 1. Train the attacker (required first)
 
