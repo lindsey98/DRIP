@@ -44,9 +44,9 @@ verification).
 | # | Repo (`Kelsey98/…`) | Revision (commit SHA) | Weights SHA-256 | Size |
 |---|---|---|---|---|
 | 1 | `Llama-3.1-8B-Instruct-TextTextText-4roles-toolcall-drip` | `<pin>` | `5abaaed207cb2f8eed129852a77d583203feca27108dfada7c084ff52b8a3d95` | 4.44 GB |
-| 2 | `Llama-3.1-8B-Instruct-TextTextText-drip` | `<pin>` | `<sha256>` | — |
-| 3 | `Meta-Llama-3-8B-Instruct-TextTextText-drip` | `<pin>` | `<sha256>` | — |
-| 4 | `Mistral-7B-Instruct-v0.3-TextTextTextMistral-drip` | `<pin>` | `<sha256>` | — |
+| 2 | `Llama-3.1-8B-Instruct-TextTextText-drip` | `<pin>` | `4a0b7e9e228b042537661d541437c081eb9f88139c380bb066e68b2a9531ad53` | 4.44 GB |
+| 3 | `Meta-Llama-3-8B-Instruct-TextTextText-drip` | `<pin>` | `e7b0b5f25960d80a08b163cf48151dc89988b68637bef65f0bb4fdc1004bc7a4` | 4.44 GB |
+| 4 | `Mistral-7B-Instruct-v0.3-TextTextTextMistral-drip` | `<pin>` | `f57d83a7edafe9afeab2d7d0fa7b5eec821b06e6691738f175554cbaf6ad8c21` | 1.31 GB |
 
 > Revisions still **to pin**: paste each repo's commit SHA (top of *Files and
 > versions → History*, or `HfApi().model_info(repo).sha`). If a repo shards its
