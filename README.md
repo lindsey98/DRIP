@@ -4,6 +4,8 @@
 
 Official code for **"DRIP: Defending Prompt Injection via Token-wise Representation Editing and Residual Fusion."**
 
+> 📄 [`Artifact_Appendix.pdf`](./Artifact_Appendix.pdf) is the artifact appendix PDF (the companion to the CCS paper describing this artifact and how to evaluate it).
+
 DRIP introduces two architectural modifications:
 
 - A **token-wise de-instruction shift** that moves the representation of data tokens away from directive semantics.
