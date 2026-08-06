@@ -19,7 +19,7 @@ MODEL_FAMILY="mistral"
 ARCH="possep"
 
 
-python -m torch.distributed.run --nproc_per_node=6 --master_port=29951 "$SCRIPT_PATH" \
+python -m torch.distributed.run --nproc_per_node="${NPROC_PER_NODE:-6}" --master_port=29951 "$SCRIPT_PATH" \
   --objective "${OBJECTIVE}" \
   --model-family "${MODEL_FAMILY}" \
   --arch "${ARCH}" \

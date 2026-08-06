@@ -18,7 +18,7 @@ export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 export TORCH_NCCL_TIMEOUT_MS=1800000
 export TORCH_NCCL_TRACE_BUFFER_SIZE=20480
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:512
-export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5
+export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5}"
 
 SCRIPT_PATH="train_unified.py"
 BASELINE="drip"
@@ -38,7 +38,7 @@ OBJECTIVE="dpo"
 MODEL_FAMILY="llama"
 ARCH="fuse"
 
-python -m torch.distributed.run --nproc_per_node=6 --master_port=29951 "$SCRIPT_PATH" \
+python -m torch.distributed.run --nproc_per_node="${NPROC_PER_NODE:-6}" --master_port=29951 "$SCRIPT_PATH" \
   --objective "${OBJECTIVE}" \
   --model-family "${MODEL_FAMILY}" \
   --arch "${ARCH}" \

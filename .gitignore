@@ -38,6 +38,7 @@ core.*
 
 # Datasets and credentials (see README for setup)
 /datasets
+!/datasets/MANIFEST.md
 **/openai_configs.yaml
 
 # Downloaded model checkpoints

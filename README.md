@@ -176,6 +176,38 @@ instead (QLoRA runs, or models trained earlier), merge them first:
 python -m training.merge_lora --adapter_path <adapter_dir> --output_path <merged_dir>
 ```
 
+> 📄 See [`datasets/MANIFEST.md`](./datasets/MANIFEST.md) for exactly which dataset
+> each launcher consumes, and [`CHECKPOINTS.md`](./CHECKPOINTS.md) for pinned
+> adapter revisions and checksums.
+
+### Hardware & GPU configuration
+
+The launchers are **not** pinned to a fixed GPU count — the reference values are
+just defaults you can override with environment variables:
+
+```bash
+# use 2 GPUs instead of the default, on specific device ids
+NPROC_PER_NODE=2 CUDA_VISIBLE_DEVICES=0,1 bash ./scripts/llama8b/sep/drip_sep.sh
+```
+
+- `NPROC_PER_NODE` — number of processes / GPUs for `torch.distributed.run`
+  (defaults to the value baked into each script: 6 for most, 8/4 for a couple).
+- `CUDA_VISIBLE_DEVICES` — which device ids to use.
+
+**Training on fewer / smaller GPUs.** Our reference run uses 6–8× 48 GB GPUs, but
+DRIP is a lightweight LoRA fine-tune and fits far smaller setups by trading batch
+size for gradient accumulation (the effective batch size is
+`per_device_train_batch_size × gradient_accumulation_steps × NPROC_PER_NODE`):
+
+- Lower `--per_device_train_batch_size` (e.g. `1`) and raise
+  `--gradient_accumulation_steps` to keep the effective batch size constant.
+- Set `NPROC_PER_NODE=1 CUDA_VISIBLE_DEVICES=0` to run single-GPU.
+- For **24 GB** cards, add QLoRA-style 4-bit base loading (`bitsandbytes`) and keep
+  `--model_max_length` at the script default; the DRIP modules (`deinstruction_shift`,
+  fusion) are tiny and stay in fp16/bf16.
+
+These knobs change only throughput/precision, not the DRIP method.
+
 ### 3-role vs 4-role: train separately
 
 DRIP supports two chat formats, and you train a **separate** model for each (they
