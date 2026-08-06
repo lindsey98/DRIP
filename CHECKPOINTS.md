@@ -35,17 +35,22 @@ find . -type f \( -name '*.safetensors' -o -name '*.json' -o -name '*.model' \) 
 
 ## 3. Checksum manifest
 
-> ⚠️ **To be filled by the maintainer.** Pin each repo to the exact revision you
-> archived for the paper, then paste the SHA-256 of `adapter_model.safetensors`
-> (and `adapter_config.json`) produced by the command above. Fill these in from a
-> machine with Hub access — they cannot be generated in the sandboxed CI.
+SHA-256 of the weights `.safetensors` file in each repo. On the Hub, open the file
+under *Files and versions → `<file>.safetensors`*; the **`SHA256:`** line on that
+blob page is the value below (this equals `sha256sum` of the downloaded file — the
+separate "Xet hash" is Hugging Face's internal dedup hash, not used for
+verification).
 
-| # | Repo | Revision (commit SHA) | `adapter_model.safetensors` SHA-256 | `adapter_config.json` SHA-256 |
+| # | Repo (`Kelsey98/…`) | Revision (commit SHA) | Weights SHA-256 | Size |
 |---|---|---|---|---|
-| 1 | `…-4roles-toolcall-drip` | `<pin>` | `<sha256>` | `<sha256>` |
-| 2 | `…-TextTextText-drip` (Llama-3.1) | `<pin>` | `<sha256>` | `<sha256>` |
-| 3 | `Meta-Llama-3-…-TextTextText-drip` | `<pin>` | `<sha256>` | `<sha256>` |
-| 4 | `Mistral-7B-…-TextTextTextMistral-drip` | `<pin>` | `<sha256>` | `<sha256>` |
+| 1 | `Llama-3.1-8B-Instruct-TextTextText-4roles-toolcall-drip` | `<pin>` | `5abaaed207cb2f8eed129852a77d583203feca27108dfada7c084ff52b8a3d95` | 4.44 GB |
+| 2 | `Llama-3.1-8B-Instruct-TextTextText-drip` | `<pin>` | `<sha256>` | — |
+| 3 | `Meta-Llama-3-8B-Instruct-TextTextText-drip` | `<pin>` | `<sha256>` | — |
+| 4 | `Mistral-7B-Instruct-v0.3-TextTextTextMistral-drip` | `<pin>` | `<sha256>` | — |
+
+> Revisions still **to pin**: paste each repo's commit SHA (top of *Files and
+> versions → History*, or `HfApi().model_info(repo).sha`). If a repo shards its
+> weights into several `.safetensors`, list one row per shard.
 
 Once filled, evaluators can confirm they are running the exact artifact evaluated
 in the paper.
