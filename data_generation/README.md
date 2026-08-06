@@ -24,7 +24,7 @@ Run this script over the injected dataset.
 
 1. **Load** injected requests from `{name}_injected_diff_output.json`.
 2. **`process_chosen`** wraps input as `<instruction>...</instruction><start of data>...<end of data>`, strips the `INSISTENCE` marker, and queries the model with a system message enforcing data/instruction separation.
-   - If `--no_judge` is off, an LLM judge ([`tasktracker_judge_prompt2.txt`](./tasktracker_judge_prompt2.txt)) checks the chosen response: `INCLUDED` means the injected probe was reflected/executed in the answer (undesirable for the preferred response), `NOT INCLUDED` means it was not. On `"INCLUDED"` it retries once, telling the model to treat the probe as inert data and perform only the original task.
+   - If `--no_judge` is off, an LLM judge ([`tasktracker_judge_prompt2.txt`](./tasktracker_judge_prompt2.txt)) checks the chosen response: `INCLUDED` means the injected probe's content was reflected/used in the answer (undesirable for the preferred response), `NOT INCLUDED` means it was not. This is a data-inclusion check, not a check of whether the injected task was executed. On `"INCLUDED"` it retries once, telling the model to treat the probe as inert data and perform only the original task.
 3. **`process_rejected`** feeds the `injected_probe` as a developer message over `clean_input`, producing the non-compliant (injected) response.
 4. **`build_dpo_pairs`** joins chosen and rejected on `(instruction, input)`, then the result is shuffled and saved.
 
