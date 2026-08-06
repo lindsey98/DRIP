@@ -5,6 +5,8 @@
 Official code for **"DRIP: Defending Prompt Injection via Token-wise Representation Editing and Residual Fusion."**
 
 > 📄 [`Artifact_Appendix.pdf`](./Artifact_Appendix.pdf) is the artifact appendix PDF (the companion to the CCS paper describing this artifact and how to evaluate it).
+>
+> 📄 [`DRIP_Supplementary.pdf`](./DRIP_Supplementary.pdf) is the supplementary materials for the DRIP paper.
 
 DRIP introduces two architectural modifications:
 
