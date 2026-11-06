@@ -485,9 +485,14 @@ class LlamaForCausalLMDRIP(transformers.LlamaForCausalLM):
                 # First token of response region
                 # first_resp_indices = _get_first_indices(self.response_label, expert_labels)
                 first_resp_indices = _get_last_segment_start(self.response_label, expert_labels)
-                # Last token of the response delimiter = first + (delimiter_length - 1)
+                # Fuse onto the position whose logits produce the FIRST generated
+                # token: the slot right AFTER the response delimiter (e.g. the trailing
+                # newline). Using the delimiter's last token (`- 1`) is an off-by-one
+                # that writes the fused state to a position generation never reads
+                # (logits discarded), making the residual fusion a no-op at inference.
+                # The clamp keeps it correct when nothing trails the delimiter.
                 resp_delm_len = len(self.config.response_delm_ids)  # stored in config
-                end_indices = (first_resp_indices + resp_delm_len - 1).clamp(max=expert_labels.shape[1] - 1)
+                end_indices = (first_resp_indices + resp_delm_len).clamp(max=expert_labels.shape[1] - 1)
                 end_state   = hidden_states[batch_idx, end_indices]  # (B, H)
 
                 # Add last instruction token's semantic as a residual connection to the 1st response token
@@ -700,9 +705,14 @@ class LlamaForCausalLMConcatFuse(LlamaForCausalLMDRIP):
                 # First token of response region
                 # first_resp_indices = _get_first_indices(self.response_label, expert_labels)
                 first_resp_indices = _get_last_segment_start(self.response_label, expert_labels)
-                # Last token of the response delimiter = first + (delimiter_length - 1)
+                # Fuse onto the position whose logits produce the FIRST generated
+                # token: the slot right AFTER the response delimiter (e.g. the trailing
+                # newline). Using the delimiter's last token (`- 1`) is an off-by-one
+                # that writes the fused state to a position generation never reads
+                # (logits discarded), making the residual fusion a no-op at inference.
+                # The clamp keeps it correct when nothing trails the delimiter.
                 resp_delm_len = len(self.config.response_delm_ids)  # stored in config
-                end_indices = (first_resp_indices + resp_delm_len - 1).clamp(max=expert_labels.shape[1] - 1)
+                end_indices = (first_resp_indices + resp_delm_len).clamp(max=expert_labels.shape[1] - 1)
                 end_state = hidden_states[batch_idx, end_indices]  # (B, H)
 
                 # fixme: Concat last instruction token's semantic to the 1st response token
