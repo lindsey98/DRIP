@@ -139,7 +139,17 @@ def load_model_and_tokenizer(
 
     delims = delims or [" ", " ", " ", ""]
 
-    tok_src = tokenizer_path or trained_model_path
+    # Fall back to SDPA when flash-attn isn't installed (e.g. eval-only envs).
+    if attn_impl == "flash_attention_2":
+        try:
+            import flash_attn  # noqa: F401
+        except Exception:
+            logger.warning("flash-attn not installed; using attn_implementation='sdpa'.")
+            attn_impl = "sdpa"
+
+    # In adapter mode `trained_model_path` holds only adapter weights (no usable
+    # model config.json), so load the tokenizer from the base model instead.
+    tok_src = tokenizer_path or (base_model_path if load_as_adapter else trained_model_path)
     tok = transformers.AutoTokenizer.from_pretrained(tok_src, use_fast=True, use_auth_token=True)
     tok.pad_token = tok.eos_token
 
