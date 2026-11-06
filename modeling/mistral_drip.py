@@ -258,8 +258,12 @@ class MistralForCausalLMDRIP(transformers.MistralForCausalLM):
                 # follow) or last non-pad token (inference — prompt only); min() picks
                 # the right one. Robust to padding and to PROMPT_FORMAT's trailing
                 # newline; assumes at most one formatting token trails the delimiter.
-                _last_real = (attention_mask.long().sum(-1) - 1) if attention_mask is not None \
-                    else first_resp_indices.new_full((expert_labels.shape[0],), expert_labels.shape[1] - 1)
+                if attention_mask is not None:
+                    _am = attention_mask.long()
+                    # last real-token index, padding-side agnostic (works for left OR right pad)
+                    _last_real = (_am.shape[1] - 1) - _am.flip(-1).argmax(-1)
+                else:
+                    _last_real = first_resp_indices.new_full((expert_labels.shape[0],), expert_labels.shape[1] - 1)
                 end_indices = torch.minimum(first_resp_indices + resp_delm_len, _last_real).clamp(min=0, max=expert_labels.shape[1] - 1)
                 end_state = hidden_states[batch_idx, end_indices]  # (B, H)
 

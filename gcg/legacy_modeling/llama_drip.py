@@ -51,7 +51,9 @@ def _response_fusion_end_indices(response_label, expert_labels, response_delm_id
     else:
         boundary = _get_last_indices(response_label, expert_labels)
     if attention_mask is not None:
-        last_real = attention_mask.long().sum(-1) - 1
+        am = attention_mask.long()
+        # last real-token index, padding-side agnostic (works for left OR right pad)
+        last_real = (am.shape[1] - 1) - am.flip(-1).argmax(-1)
     else:
         last_real = expert_labels.new_full((B,), L - 1)
     return torch.minimum(boundary, last_real).clamp(min=0, max=L - 1)
