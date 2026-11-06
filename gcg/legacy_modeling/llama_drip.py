@@ -36,12 +36,16 @@ def _get_last_segment_start(label_index: int, expert_labels: torch.LongTensor) -
 
 
 def _response_fusion_end_indices(response_label, expert_labels, response_delm_ids):
-    """Index of the LAST token of the (last) response delimiter, matching the
-    evaluated DRIP model (modeling/llama_drip.py). Falls back to the last
-    response-labeled token when `response_delm_ids` is unavailable."""
+    """Index of the slot right AFTER the (last) response delimiter — the position
+    whose logits produce the first generated token — matching the evaluated DRIP
+    model (modeling/llama_drip.py). Using the delimiter's LAST token instead is an
+    off-by-one that lands the fused state on a position generation never reads
+    (and whose logits are masked in training), making the residual fusion a no-op.
+    Falls back to the last response-labeled token when `response_delm_ids` is
+    unavailable (already the correct final-token position)."""
     if response_delm_ids:
         start = _get_last_segment_start(response_label, expert_labels)
-        return (start + (len(response_delm_ids) - 1)).clamp(max=expert_labels.shape[1] - 1)
+        return (start + len(response_delm_ids)).clamp(max=expert_labels.shape[1] - 1)
     return _get_last_indices(response_label, expert_labels)
 
 
