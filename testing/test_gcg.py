@@ -483,7 +483,7 @@ if __name__ == "__main__":
 
     # 2. Determine Resume State
     start_index = 0
-    file_mode = "a"
+    file_mode = "w"   # overwrite on re-run so stale rows don't accumulate
 
     in_response = 0
     begin_with = 0
@@ -541,4 +541,4 @@ if __name__ == "__main__":
             fh.flush()  # Vital for crash recovery
 
     with open(summary_path, "a") as outfile:
-        outfile.write(f"GCG\t{in_response}\t{begin_with}\t{args.defense}_{TEST_INJECTED_WORD}\n")
+        outfile.write(f"GCG\t{in_response/total if total else 0}\t{begin_with/total if total else 0}\t{args.defense}_{TEST_INJECTED_WORD}\n")

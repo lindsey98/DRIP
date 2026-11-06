@@ -214,12 +214,10 @@ def parse_args(argv):
         order = ("model", "data", "training", "attack")
 
     parsed = transformers.HfArgumentParser(cls).parse_args_into_dataclasses(remaining)
-    # SecAlign branch returns dataclasses in (model, training, data, attack) order
-    # whereas other branches use (model, data, training, attack). Normalize.
-    if known.objective == "secalign_dpo":
-        model_args, training_args, data_args, attack_args = parsed
-    else:
-        model_args, data_args, training_args, attack_args = parsed
+    # HfArgumentParser returns instances in the order of `cls`, which is
+    # (model, data, training, attack) for every objective (secalign's training
+    # dataclass occupies the 3rd slot of its own `cls`). Unpack uniformly.
+    model_args, data_args, training_args, attack_args = parsed
     return known, model_args, data_args, training_args, attack_args
 
 
@@ -390,7 +388,7 @@ def build_ref_model(Model, model_args, config, bnb_config=None):
 def build_trainer(known, model, ref_model, tokenizer, training_args, data_module):
 
     if known.objective == "dpo":
-        cls = DPOTrainerOurs
+        cls = DPOTrainerAIR if known.arch == "air" else DPOTrainerOurs
         return cls(model=model,
                    ref_model=ref_model,
                    processing_class=tokenizer,
@@ -514,7 +512,8 @@ def main(argv: Optional[List[str]] = None):
         model = get_peft_model(model, build_lora_config(known.objective, known.arch, known.model_family))
 
     for n, p in model.named_parameters():
-        if any(k in n for k in ["deinstruction_shift", "residual_weight"]):
+        # residual_weight is a fixed fusion coefficient (sigmoid(0)=0.5); keep it frozen.
+        if "deinstruction_shift" in n:
             p.requires_grad = True
 
     # ---- Data ----
@@ -575,7 +574,7 @@ def main(argv: Optional[List[str]] = None):
         for n, num, dt, rg in key_params:
             print(f"    {n}  numel={num:,}  dtype={dt}  requires_grad={rg}")
 
-        if batch is not None:
+        if batch is not None and "chosen_input_ids" in batch:  # DPO-only sanity dump
             print(f"\n[Batch keys] {list(batch.keys())}")
             for k, v in batch.items():
                 if isinstance(v, torch.Tensor):
