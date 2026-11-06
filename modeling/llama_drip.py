@@ -492,7 +492,13 @@ class LlamaForCausalLMDRIP(transformers.LlamaForCausalLM):
                 # (logits discarded), making the residual fusion a no-op at inference.
                 # The clamp keeps it correct when nothing trails the delimiter.
                 resp_delm_len = len(self.config.response_delm_ids)  # stored in config
-                end_indices = (first_resp_indices + resp_delm_len).clamp(max=expert_labels.shape[1] - 1)
+                # Generation point: delimiter boundary (training — response tokens
+                # follow) or last non-pad token (inference — prompt only); min() picks
+                # the right one. Robust to padding and to PROMPT_FORMAT's trailing
+                # newline; assumes at most one formatting token trails the delimiter.
+                _last_real = (attention_mask.long().sum(-1) - 1) if attention_mask is not None \
+                    else first_resp_indices.new_full((expert_labels.shape[0],), expert_labels.shape[1] - 1)
+                end_indices = torch.minimum(first_resp_indices + resp_delm_len, _last_real).clamp(min=0, max=expert_labels.shape[1] - 1)
                 end_state   = hidden_states[batch_idx, end_indices]  # (B, H)
 
                 # Add last instruction token's semantic as a residual connection to the 1st response token
@@ -712,7 +718,13 @@ class LlamaForCausalLMConcatFuse(LlamaForCausalLMDRIP):
                 # (logits discarded), making the residual fusion a no-op at inference.
                 # The clamp keeps it correct when nothing trails the delimiter.
                 resp_delm_len = len(self.config.response_delm_ids)  # stored in config
-                end_indices = (first_resp_indices + resp_delm_len).clamp(max=expert_labels.shape[1] - 1)
+                # Generation point: delimiter boundary (training — response tokens
+                # follow) or last non-pad token (inference — prompt only); min() picks
+                # the right one. Robust to padding and to PROMPT_FORMAT's trailing
+                # newline; assumes at most one formatting token trails the delimiter.
+                _last_real = (attention_mask.long().sum(-1) - 1) if attention_mask is not None \
+                    else first_resp_indices.new_full((expert_labels.shape[0],), expert_labels.shape[1] - 1)
+                end_indices = torch.minimum(first_resp_indices + resp_delm_len, _last_real).clamp(min=0, max=expert_labels.shape[1] - 1)
                 end_state = hidden_states[batch_idx, end_indices]  # (B, H)
 
                 # fixme: Concat last instruction token's semantic to the 1st response token

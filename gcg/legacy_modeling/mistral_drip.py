@@ -243,7 +243,7 @@ class MistralForCausalLMDRIP(transformers.MistralForCausalLM):
                     past_inst_hidden_states = last_inst.clone().detach().cpu()
 
                 end_indices = _response_fusion_end_indices(
-                    self.response_label, expert_labels, getattr(self.config, "response_delm_ids", None)
+                    self.response_label, expert_labels, getattr(self.config, "response_delm_ids", None), attention_mask
                 )  # (B,)
                 end_state   = hidden_states[batch_idx, end_indices]  # (B, H)
 
