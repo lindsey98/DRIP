@@ -35,18 +35,26 @@ def _get_last_segment_start(label_index: int, expert_labels: torch.LongTensor) -
     return torch.where(run_start, seq, torch.full_like(seq, -1)).max(dim=1)[0]
 
 
-def _response_fusion_end_indices(response_label, expert_labels, response_delm_ids):
-    """Index of the slot right AFTER the (last) response delimiter — the position
-    whose logits produce the first generated token — matching the evaluated DRIP
-    model (modeling/llama_drip.py). Using the delimiter's LAST token instead is an
-    off-by-one that lands the fused state on a position generation never reads
-    (and whose logits are masked in training), making the residual fusion a no-op.
-    Falls back to the last response-labeled token when `response_delm_ids` is
-    unavailable (already the correct final-token position)."""
+def _response_fusion_end_indices(response_label, expert_labels, response_delm_ids, attention_mask=None):
+    """Generation-point index, format-independent (matches modeling/llama_drip.py):
+    the delimiter boundary (slot right after the last response delimiter) during
+    training where response tokens follow, or the last real/non-pad token at
+    inference where only the prompt is present. Taking min() of the two selects the
+    right position in each case — robust to padding and to PROMPT_FORMAT's trailing
+    newline (assumes at most one formatting token trails the delimiter) — avoiding the
+    off-by-one that otherwise lands the fused state on a position generation never
+    reads (making the residual fusion a no-op)."""
+    B, L = expert_labels.shape
     if response_delm_ids:
         start = _get_last_segment_start(response_label, expert_labels)
-        return (start + len(response_delm_ids)).clamp(max=expert_labels.shape[1] - 1)
-    return _get_last_indices(response_label, expert_labels)
+        boundary = start + len(response_delm_ids)
+    else:
+        boundary = _get_last_indices(response_label, expert_labels)
+    if attention_mask is not None:
+        last_real = attention_mask.long().sum(-1) - 1
+    else:
+        last_real = expert_labels.new_full((B,), L - 1)
+    return torch.minimum(boundary, last_real).clamp(min=0, max=L - 1)
 
 
 class LlamaDRIPConfig(LlamaConfig):
@@ -443,7 +451,7 @@ class LlamaForCausalLMDRIP(transformers.LlamaForCausalLM):
                     past_inst_hidden_states = last_inst.clone().detach().cpu()
 
                 end_indices = _response_fusion_end_indices(
-                    self.response_label, expert_labels, getattr(self.config, "response_delm_ids", None)
+                    self.response_label, expert_labels, getattr(self.config, "response_delm_ids", None), attention_mask
                 )  # (B,)
                 end_state   = hidden_states[batch_idx, end_indices]  # (B, H)
 
@@ -689,7 +697,7 @@ class LlamaForCausalLMConcatFuse(LlamaForCausalLMDRIP):
                     past_inst_hidden_states = last_inst.clone().detach().cpu()
 
                 start_resp_indices = _response_fusion_end_indices(
-                    self.response_label, expert_labels, getattr(self.config, "response_delm_ids", None)
+                    self.response_label, expert_labels, getattr(self.config, "response_delm_ids", None), attention_mask
                 )
                 start_resp = hidden_states[batch_idx, start_resp_indices]
 
