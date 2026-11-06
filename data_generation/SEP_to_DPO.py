@@ -69,6 +69,8 @@ def main():
             insistence = INSISTENCE_FALLBACK
 
         z_prime       = random.choice(sep_data)
+        while z_prime["system_prompt"].strip() == item["system_prompt"].strip():
+            z_prime = random.choice(sep_data)   # don't inject the sample's own instruction
         injected_probe = z_prime["system_prompt"].strip()
 
         results.append({

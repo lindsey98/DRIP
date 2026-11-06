@@ -46,7 +46,7 @@ class TrainingArguments(transformers.TrainingArguments):
     ref_model_init_kwargs: Optional[str] = field(default=None)
     precompute_ref_log_probs: Optional[bool] = field(default=False)
     report_to: Optional[str] = None
-    resume_from_checkpoint: Optional[bool] = field(default=True)
+    resume_from_checkpoint: Optional[bool] = field(default=False)
 
 @dataclass
 class DPOArgsSecAlign(trl.DPOConfig):
@@ -379,7 +379,7 @@ class SFTTrainerParams(Trainer):
 
 class SFTTrainerOurs(SFTTrainerParams):
 
-    def create_optimizer(self, special_params_list = ["deinstruction_shifts"]):
+    def create_optimizer(self, special_params_list = ["deinstruction_shift"]):
         return super().create_optimizer(special_params_list)
 
 class SFTTrainerISE(SFTTrainerParams):

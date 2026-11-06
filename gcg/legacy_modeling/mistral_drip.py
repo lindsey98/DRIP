@@ -182,7 +182,7 @@ class MistralForCausalLMDRIP(transformers.MistralForCausalLM):
         self.vocab_size = config.vocab_size
         self.vocab_size      = config.vocab_size
         self.hidden_size     = config.hidden_size
-        self.residual_weight = nn.Parameter(torch.tensor([0.01])) # 0.5 weight assigned to the last instruction token
+        self.residual_weight = nn.Parameter(torch.tensor([0.0])) # fixed fusion coeff; sigmoid(0)=0.5
         self.response_label  = 2
         self.instruct_label  = 0
         self.final_tap = torch.nn.Identity()  # <— dummy tap point

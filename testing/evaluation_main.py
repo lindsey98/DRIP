@@ -59,11 +59,11 @@ def main():
     for a in attack_list:
         if a == 'ignore_0':
             if (model_path / f"{a}-{defense}-{word}.csv").exists():
-                df = pd.read_csv(model_path / f"{a}-{defense}-{word}.csv", header=None)
+                df = pd.read_csv(model_path / f"{a}-{defense}-{word}.csv")
             else:
-                df = pd.read_csv(model_path / f"ignore-{defense}-{word}.csv", header=None)
+                df = pd.read_csv(model_path / f"ignore-{defense}-{word}.csv")
         else:
-            df = pd.read_csv(model_path / f"{a}-{defense}-{word}.csv", header=None)
+            df = pd.read_csv(model_path / f"{a}-{defense}-{word}.csv")
         if a != "hackaprompt" and len(df) < 208:
             raise ValueError(f"Attack {a} is unfinished")
         col  = df.iloc[:, 1]
